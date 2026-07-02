@@ -2,12 +2,15 @@
 
 #include <stdbool.h>
 
-#define CHIP_8_MEMORY_SIZE 4096
+#define CHIP8_MEMORY_SIZE 4096
+#define CHIP8_FONTSET_SIZE 80
+#define CHIP8_MEMORY_OFFSET 0x200 // 512
+
 
 // https://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
 typedef struct {
     unsigned short opcode;
-    unsigned char memory[CHIP_8_MEMORY_SIZE];
+    unsigned char memory[CHIP8_MEMORY_SIZE];
 
     // V0 - VE, last byte for carry forward
     unsigned char V[16];
@@ -37,5 +40,5 @@ typedef struct {
 extern const unsigned char chip8_fontset[80];
 
 void chip8_init(Chip8 *chip8);
-// void load_rom(Chip8 *chip8);
+void chip8_load_rom(Chip8 *chip8, char *filename);
 // void emulateCycle(Chip8 *chip8);
