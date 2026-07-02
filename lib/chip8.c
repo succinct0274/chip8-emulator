@@ -2,8 +2,9 @@
 #include <string.h>
 
 #define INIT_POINTER(ptr) (memset((ptr), 0, (sizeof(*(ptr)))))
+#define FONTSET_SIZE 80
 
-const unsigned char chip8_fontset[80] =
+const unsigned char chip8_fontset[FONTSET_SIZE] =
 { 
   0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
   0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -36,5 +37,12 @@ void initialize(Chip8 *chip8) {
   INIT_POINTER(chip8->memory);
   INIT_POINTER(chip8->key);
   INIT_POINTER(chip8->key_prev);
-  
+
+  for (int i = 0; i < FONTSET_SIZE; i++) {
+    chip8->memory[i] = chip8_fontset[i];
+  }
+
+  chip8->delay_timer = 0;
+  chip8->sound_timer = 0;
+  chip8->draw_flag = 1;
 }
