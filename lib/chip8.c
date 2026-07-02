@@ -1,3 +1,5 @@
+#pragma once
+
 #include "chip8.h"
 #include <string.h>
 
@@ -24,7 +26,7 @@ const unsigned char chip8_fontset[FONTSET_SIZE] =
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void initialize(Chip8 *chip8) {
+void chip8_init(Chip8 *chip8) {
   // Start address of ROM
   chip8->pc = 0x200;
   chip8->opcode = 0;

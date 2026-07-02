@@ -36,6 +36,6 @@ typedef struct {
 
 extern const unsigned char chip8_fontset[80];
 
-void initialize(Chip8 *chip8);
+void chip8_init(Chip8 *chip8);
 // void load_rom(Chip8 *chip8);
 // void emulateCycle(Chip8 *chip8);
