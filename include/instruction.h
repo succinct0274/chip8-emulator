@@ -3,7 +3,11 @@
 #include "chip8.h"
 #include <stdint.h>
 
+#define NIBBLE_TO_INDEX(category) ((uint8_t) ((category) >> 12))
+
 typedef void (*InstructionHandler)(Chip8* chip8, uint16_t opcode);
+
+void instruction_execute(Chip8 *chip8, uint16_t opcode);
 
 void handle_0000(Chip8 *chip8, uint16_t opcode);
 void handle_jump(Chip8 *Chip8, uint16_t opcode);

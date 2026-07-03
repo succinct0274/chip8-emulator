@@ -9,8 +9,16 @@ typedef enum {
     OP_RET = 0x00EE  // Return from a subroutine
 } Opcode;
 
+void instruction_execute(Chip8 *chip8, uint16_t opcode) {
+    uint8_t idx = NIBBLE_TO_INDEX(opcode & 0xF000);
+    printf("Retrieve instruction at index %d\n", idx);
+    instruction_table[idx](chip8, opcode);
+}
+
 // http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#3.1
 void handle_0000(Chip8 *chip8, uint16_t opcode) {
+
+    fprintf(stderr, "opcode: %d\n", opcode);
     switch (opcode) {
     case OP_CLS:
         RESET_POINTER(chip8->gfx);
