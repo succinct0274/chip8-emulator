@@ -1,9 +1,11 @@
 #include "chip8.h"
-#include <string.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "instruction.h"
+#include "common.h"
 
-#define INIT_POINTER(ptr) (memset((ptr), 0, (sizeof(*(ptr)))))
 
 const unsigned char chip8_fontset[CHIP8_FONTSET_SIZE] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -31,12 +33,12 @@ void chip8_init(Chip8 *chip8) {
     chip8->I = 0;
     chip8->sp = 0;
 
-    INIT_POINTER(chip8->gfx);
-    INIT_POINTER(chip8->stack);
-    INIT_POINTER(chip8->V);
-    INIT_POINTER(chip8->memory);
-    INIT_POINTER(chip8->key);
-    INIT_POINTER(chip8->key_prev);
+    RESET_POINTER(chip8->gfx);
+    RESET_POINTER(chip8->stack);
+    RESET_POINTER(chip8->V);
+    RESET_POINTER(chip8->memory);
+    RESET_POINTER(chip8->key);
+    RESET_POINTER(chip8->key_prev);
 
     for (int i = 0; i < CHIP8_FONTSET_SIZE; i++) {
         chip8->memory[i] = chip8_fontset[i];
@@ -48,40 +50,50 @@ void chip8_init(Chip8 *chip8) {
 }
 
 void chip8_load_rom(Chip8 *chip8, char *filename) {
-	
-	char full_path[256];
-	
-	int result = snprintf(full_path, sizeof(full_path), "CHIP-8 Emulator | ROM: %s", filename);
-	if (result < 0 || result >= (int) sizeof(full_path)) {
-		fprintf(stderr, "Error: filename is too long\n");
-		return;
-	}
 
-	FILE *file = fopen(full_path, "rb");
-	if (file == NULL) {
-		fprintf(stderr, "Error opening file\n");
-		return;
-	}
+    char full_path[256];
 
-	fseek(file, 0, SEEK_END);
-	long rom_size = ftell(file);
-	fseek(file, 0, SEEK_SET);
+    int result = snprintf(full_path, sizeof(full_path), "%s", filename);
+    if (result < 0 || result >= (int)sizeof(full_path)) {
+        fprintf(stderr, "Error: filename is too long\n");
+        return;
+    }
+
+    printf("Attempting to open %s", full_path);
+    FILE *file = fopen(full_path, "rb");
+    if (file == NULL) {
+        perror("Error opening file\n");
+        return;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long rom_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
 
     printf("ROM File Size: %ld Bytes\n", rom_size);
-	if (rom_size > CHIP8_MEMORY_SIZE - CHIP8_MEMORY_OFFSET) {
-		fprintf(stderr, "Error: ROM file size (%ld bytes) is too long\n", rom_size);
-		fclose(file);
-		return;
-	}
+    if (rom_size > CHIP8_MEMORY_SIZE - CHIP8_MEMORY_OFFSET) {
+        fprintf(stderr, "Error: ROM file size (%ld bytes) is too long\n", rom_size);
+        fclose(file);
+        return;
+    }
 
-	// Read the rom into chip8 memory
-	size_t bytes_read = fread(&chip8->memory[CHIP8_MEMORY_OFFSET], 1, rom_size, file);
-	if (bytes_read != (size_t) rom_size) {
-		fprintf(stderr, "Error while reading ROM file\n");
-		fclose(file);
-		return;
-	}
+    // Read the rom into chip8 memory
+    size_t bytes_read = fread(&chip8->memory[CHIP8_MEMORY_OFFSET], 1, rom_size, file);
+    if (bytes_read != (size_t)rom_size) {
+        fprintf(stderr, "Error while reading ROM file\n");
+        fclose(file);
+        return;
+    }
 
-	fclose(file);
-	printf("Successfully loaded ROM: %s (%ld bytes)\n", filename, rom_size);
+    fclose(file);
+    printf("Successfully loaded ROM: %s (%ld bytes)\n", filename, rom_size);
+}
+
+void chip8_emulate_cycle(Chip8 *chip8) {
+
+    // Fetch opcode (two bytes as one instruction set)
+    chip8->opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];
+
+    const uint8_t category = chip8->opcode & 0xF000;
+	instruction_table[category](&chip8, chip8->opcode);
 }

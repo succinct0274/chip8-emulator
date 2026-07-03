@@ -9,8 +9,17 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    bool quit = false;
+    Chip8 chip8;
+    char *rom_filename;
+    if (argc >= 2) {
+        chip8_init(&chip8);
+        rom_filename = argv[1];
+        printf("Loading ROM: %s\n", rom_filename);
 
+        chip8_load_rom(&chip8, rom_filename);
+    }
+    
+    bool quit = false;
     while (!quit) {
         display_draw(&quit);
     }

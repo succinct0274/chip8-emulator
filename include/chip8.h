@@ -21,7 +21,7 @@ typedef struct {
     0x200-0xFFF - Program ROM and work RAM
     */
     unsigned short I;   // Index register
-    unsigned short pc;  
+    unsigned short pc;  // Program counter
 
     unsigned char gfx[64 * 32];
     
@@ -41,4 +41,4 @@ extern const unsigned char chip8_fontset[80];
 
 void chip8_init(Chip8 *chip8);
 void chip8_load_rom(Chip8 *chip8, char *filename);
-// void emulateCycle(Chip8 *chip8);
+void chip8_emulate_cycle(Chip8 *chip8);

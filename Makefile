@@ -27,7 +27,7 @@ OBJS := $(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.c=.o)))
 # ==========================================
 # Build Rules
 # ==========================================
-.PHONY: all clean run
+.PHONY: all clean run debug
 
 # Default target
 all: $(TARGET)
@@ -50,6 +50,9 @@ $(BIN_DIR) $(OBJ_DIR):
 # Run the emulator
 run: all
 	./$(TARGET)
+
+debug: all
+	./$(TARGET) ./roms/test.ch8
 
 # Clean build artifacts
 clean:
