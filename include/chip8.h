@@ -5,6 +5,8 @@
 #define CHIP8_MEMORY_SIZE 4096
 #define CHIP8_FONTSET_SIZE 80
 #define CHIP8_MEMORY_OFFSET 0x200 // 512
+#define CHIP8_GFX_WIDTH 64
+#define CHIP8_GFX_HEIGHT 32
 
 
 // https://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
@@ -23,7 +25,7 @@ typedef struct {
     unsigned short I;   // Index register
     unsigned short pc;  // Program counter
 
-    unsigned char gfx[64 * 32];
+    unsigned char gfx[CHIP8_GFX_WIDTH * CHIP8_GFX_HEIGHT];
     
     unsigned char delay_timer;
     unsigned char sound_timer;
@@ -37,7 +39,7 @@ typedef struct {
 
 } Chip8;
 
-extern const unsigned char chip8_fontset[80];
+extern const unsigned char chip8_fontset[CHIP8_FONTSET_SIZE];
 
 void chip8_init(Chip8 *chip8);
 void chip8_load_rom(Chip8 *chip8, char *filename);
