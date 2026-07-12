@@ -16,7 +16,8 @@ const InstructionHandler instruction_table[] = {[0x0] = handle_0000,
                                                 [0xA] = handle_ld_i_nnn,
                                                 [0xB] = handle_jp_v0_nnn,
                                                 [0xC] = handle_rnd_vx_nn,
-                                                [0xD] = handle_drw_vx_vy_n};
+                                                [0xD] = handle_drw_vx_vy_n,
+                                                [0xE] = handle_E000};
 
 typedef enum {
     OP_CLS = 0x00E0, // Clear the display.
@@ -236,5 +237,30 @@ void handle_drw_vx_vy_n(Chip8 *chip8, uint16_t opcode) {
     }
 
     chip8->draw_flag = true;
+    chip8->pc += 2;
+}
+
+void handle_E000(Chip8 *chip8, uint16_t opcode) {
+    uint8_t subcode = opcode & 0x00FF;
+    uint8_t x = (opcode & 0x0F00) >> 8;
+
+    if (subcode == 0x9E && chip8->key[chip8->V[x]] != 0) {
+
+        // Ex9E - SKP Vx
+        // Skip next instruction if key with the value of Vx is pressed.
+        // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
+
+        chip8->pc += 2;    
+    } else if (subcode == 0xA1 && chip8->key[chip8->V[x]] == 0) {
+        // ExA1 - SKNP Vx
+        // Skip next instruction if key with the value of Vx is not pressed.
+        // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
+
+        chip8->pc += 2;
+    } else {
+        fprintf(stderr, "Unknown opcode 0x%X\n", opcode);
+    }
+    
+    
     chip8->pc += 2;
 }
