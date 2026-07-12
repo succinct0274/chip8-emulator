@@ -23,8 +23,8 @@ void handle_ld_i_nnn(Chip8 *chip8, uint16_t opcode); // Handles ANNN
 void handle_jp_v0_nnn(Chip8 *chip8, uint16_t opcode); // Handles BNNN
 void handle_rnd_vx_nn(Chip8 *chip8, uint16_t opcode); // Handles CXNN
 void handle_drw_vx_vy_n(Chip8 *chip8, uint16_t opcode); // Handles DXYN
-// void handle_E000(SChip8 *Chip8, uint16_t Opcode); // Sub-switch for key inputs EX9E and EXA1
-// void handle_F000(SChip8 *Chip8, uint16_t Opcode); // Sub-switch for FX07, FX55, FX65, etc.
+void handle_E000(Chip8 *chip8, uint16_t opcode); // Sub-switch for key inputs EX9E and EXA1
+void handle_F000(Chip8 *chip8, uint16_t opcode); // Sub-switch for FX07, FX55, FX65, etc.
 
 extern const InstructionHandler instruction_table[];
 
