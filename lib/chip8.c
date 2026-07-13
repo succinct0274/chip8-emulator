@@ -95,7 +95,6 @@ void chip8_emulate_cycle(Chip8 *chip8) {
     // Fetch opcode (two bytes as one instruction set)
     chip8->opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];
 
-	instruction_execute(&chip8, chip8->opcode);
-    // const uint8_t category = NIBBLE_TO_INDEX(chip8->opcode & 0xF000);
-	// instruction_table[category](&chip8, chip8->opcode);
+	instruction_execute(chip8, chip8->opcode);
+
 }

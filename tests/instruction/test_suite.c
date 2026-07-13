@@ -27,7 +27,6 @@ void test_call_and_return(void) {
     Chip8 chip8;
     setup(&chip8);
 
-    // 模擬 0x2NNN: CALL 0x300
     chip8.memory[0x200] = 0x23;
     chip8.memory[0x201] = 0x00;
     uint16_t call_opcode = (chip8.memory[chip8.pc] << 8) | chip8.memory[chip8.pc + 1];
@@ -36,10 +35,8 @@ void test_call_and_return(void) {
     assert(chip8.pc == 0x300);
     assert(chip8.sp == 1);
     
-    // 假設你在 CALL 時壓入的是 pc + 2 (0x202)
     assert(chip8.stack[0] == 0x200); 
 
-    // 模擬 0x00EE: RET
     uint16_t ret_opcode = 0x00EE;
     chip8.opcode = ret_opcode;
     instruction_execute(&chip8, chip8.opcode);

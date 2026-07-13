@@ -15,10 +15,14 @@ LIB_DIR  := lib
 INC_DIR  := include
 OBJ_DIR  := obj
 BIN_DIR  := bin
+TEST_DIR := tests
 
 TARGET   := $(BIN_DIR)/chip8
-TEST_TARGET = $(BIN_DIR)/test_suite
 CPPFLAGS := -I$(INC_DIR)
+
+TEST_BIN = bin/tests
+TEST_SRCS = $(shell find $(TEST_DIR) -name "*.c")
+TEST_BINS = $(patsubst $(TEST_DIR)/%.c, $(TEST_BIN)/%, $(TEST_SRCS))
 
 # ==========================================
 # Source and Object File Detection
@@ -35,7 +39,7 @@ ALL_OBJS := $(APP_OBJ) $(LIB_OBJS)
 # ==========================================
 # Build Rules
 # ==========================================
-.PHONY: all clean run debug test
+.PHONY: all clean run debug test tests
 
 # Default target
 all: $(TARGET)
@@ -55,15 +59,16 @@ $(OBJ_DIR)/%.o: lib/%.c | $(OBJ_DIR)
 $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
 
-$(TEST_TARGET): tests/test_suite.c $(LIB_OBJS) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) tests/test_suite.c $(LIB_OBJS) -o $(TEST_TARGET) $(LDFLAGS)
+$(TEST_BIN)/%: $(TEST_DIR)/%.c $(LIB_OBJS) | $(BIN_DIR)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $< $(LIB_OBJS) -o $@ $(LDFLAGS)
 
 # Run the emulator
 run: all
 	./$(TARGET)
 
-test: $(TEST_TARGET)
-	./$(TEST_TARGET)
+test: $(TEST_BINS)
+	@for test in $(TEST_BINS); do ./$$test; done
 
 debug: all
 	./$(TARGET) ./roms/test.ch8
