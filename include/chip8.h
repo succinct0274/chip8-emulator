@@ -7,6 +7,7 @@
 #define CHIP8_MEMORY_OFFSET 0x200 // 512
 #define CHIP8_GFX_WIDTH 64
 #define CHIP8_GFX_HEIGHT 32
+#define CHIP8_BUTTON_COUNT 16
 
 
 // https://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
@@ -34,8 +35,8 @@ typedef struct {
     unsigned short stack[16];
     unsigned short sp;  // stack pointer
 
-    unsigned char key[16];
-    unsigned char key_prev[16];
+    unsigned char key[CHIP8_BUTTON_COUNT];
+    unsigned char key_prev[CHIP8_BUTTON_COUNT];
 
 } Chip8;
 

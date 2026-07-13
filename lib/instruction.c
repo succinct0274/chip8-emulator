@@ -42,6 +42,18 @@ typedef enum {
     OP_SKNP = 0xA1
 } Opcode_E_Subtype;
 
+typedef enum {
+    OP_LD_VX_DT = 0x07,
+    OP_LD_VX_K = 0x0A,
+    OP_LD_DT_VX = 0x15,
+    OP_LD_ST_VX = 0x18,
+    OP_ADD_I_VX = 0x1E,
+    OP_LD_F_VX = 0x29,
+    OP_LD_B_VX = 0x33,
+    OP_LD_I_VX = 0x55,
+    OP_LD_VX_I = 0x65
+} Opcode_F_Subtype;
+
 void instruction_execute(Chip8 *chip8, uint16_t opcode) {
     uint8_t idx = NIBBLE_TO_INDEX(opcode & 0xF000);
     printf("Retrieve instruction at index %d\n", idx);
@@ -63,7 +75,7 @@ void handle_0000(Chip8 *chip8, uint16_t opcode) {
         break;
     default: // 0nnn
         printf("Unknown opcode [0x0000] SYS addr: 0x%X\n", opcode);
-        break;
+        return;
     }
 
     chip8->pc += 2;
@@ -169,7 +181,7 @@ void handle_8000(Chip8 *chip8, uint16_t opcode) {
         break;
     default:
         fprintf(stderr, "Unknown opcode 0x%X\n", opcode);
-        break;
+        return;
     }
 
     chip8->pc += 2;
@@ -265,6 +277,7 @@ void handle_E000(Chip8 *chip8, uint16_t opcode) {
         chip8->pc += 2;
     } else {
         fprintf(stderr, "Unknown opcode 0x%X\n", opcode);
+        return;
     }
     
     
@@ -273,5 +286,62 @@ void handle_E000(Chip8 *chip8, uint16_t opcode) {
 
 void handle_F000(Chip8 *chip8, uint16_t opcode) {
     uint8_t x = (opcode & 0x0F00) >> 8;
+    bool proceeded = true;
+    
+    switch (opcode) {
+    case OP_LD_VX_DT:
+        chip8->V[x] = chip8->delay_timer;
+        break;
+    case OP_LD_VX_K:
+        proceeded = false;
+        for (int i = 0; i < CHIP8_BUTTON_COUNT; i++) {
+            if (chip8->key[i] == 0 && chip8->key_prev[i] != 0) {
+                chip8->V[x] = i;
+                proceeded = true;
+                break;
+            }
+        }
+        break;
+    case OP_LD_DT_VX:
+        chip8->delay_timer = chip8->V[x];
+        break;
+    case OP_LD_ST_VX:
+        chip8->sound_timer = chip8->V[x];
+        break;
+    case OP_ADD_I_VX:
+        chip8->I += chip8->V[x];
+        break;
+    case OP_LD_F_VX:
+        uint8_t digit = chip8->V[x];
+        chip8->I = digit * 5; // A sprite is 5 bytes width long each
+    case OP_LD_B_VX:
+        uint8_t decimal = chip8->V[x];
+        // Store the number in decimal number form and put each digit into each memory location
+        chip8->memory[chip8->I] = (decimal / 100) % 10;
+        chip8->memory[chip8->I + 1] = (decimal / 10) % 10;
+        chip8->memory[chip8->I + 2] = decimal % 10;
+        break;
+    case OP_LD_I_VX:
+        for (int i = 0; i <= x; i++) {
+            chip8->memory[chip8->I + i] = chip8->V[i];
+        }
+        
+        chip8->I = chip8->I + x + 1;
 
+        break;
+    case OP_LD_VX_I:
+        for (int i = 0; i <= x; i++) {
+            chip8->V[i] = chip8->memory[chip8->I + i];
+        }
+
+        chip8->I = chip8->I + x + 1;
+    default:
+        fprintf(stderr, "Unknown code 0x%X\n", opcode);
+        return;
+    }
+
+    if (proceeded) {
+        chip8->pc += 2;
+    }
+    
 }
