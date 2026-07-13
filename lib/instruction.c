@@ -285,10 +285,11 @@ void handle_E000(Chip8 *chip8, uint16_t opcode) {
 }
 
 void handle_F000(Chip8 *chip8, uint16_t opcode) {
+    uint8_t subcode = opcode & 0x00FF;
     uint8_t x = (opcode & 0x0F00) >> 8;
     bool proceeded = true;
     
-    switch (opcode) {
+    switch (subcode) {
     case OP_LD_VX_DT:
         chip8->V[x] = chip8->delay_timer;
         break;
@@ -314,6 +315,7 @@ void handle_F000(Chip8 *chip8, uint16_t opcode) {
     case OP_LD_F_VX:
         uint8_t digit = chip8->V[x];
         chip8->I = digit * 5; // A sprite is 5 bytes width long each
+        break;
     case OP_LD_B_VX:
         uint8_t decimal = chip8->V[x];
         // Store the number in decimal number form and put each digit into each memory location
@@ -335,6 +337,7 @@ void handle_F000(Chip8 *chip8, uint16_t opcode) {
         }
 
         chip8->I = chip8->I + x + 1;
+        break;
     default:
         fprintf(stderr, "Unknown code 0x%X\n", opcode);
         return;
