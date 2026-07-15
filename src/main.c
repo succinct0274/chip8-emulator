@@ -11,8 +11,11 @@
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
+    SDL_Texture *texture;
     Chip8 chip8;
-    bool running;
+
+    uint64_t last_time;
+    double timer_accumulator;
 } AppState;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
@@ -37,6 +40,18 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
         return SDL_APP_FAILURE;
     }
 
+    ctx->texture = SDL_CreateTexture(ctx->renderer, SDL_PIXELFORMAT_ARGB8888,
+															SDL_TEXTUREACCESS_STREAMING, CHIP8_GFX_WIDTH,
+															CHIP8_GFX_HEIGHT);
+	if (ctx->texture == NULL) {
+		fprintf(stderr, "Error creating texture: %s\n", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	if (!SDL_SetTextureScaleMode(ctx->texture, SDL_SCALEMODE_NEAREST)) {
+		fprintf(stderr, "Nearest neighbour texture filtering failed to enable.");
+	}
+
     // Initialize chip8
     char *rom_filename;
     if (argc >= 2) {
@@ -50,6 +65,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
     }
 
+    ctx->last_time = SDL_GetTicks();
+    ctx->timer_accumulator = 0.0;
+
+    SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(ctx->renderer);
+
     return SDL_APP_CONTINUE;
 }
 
@@ -59,6 +80,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         return SDL_APP_SUCCESS; // Clean exit
     }
 
+    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
     // handle keyboard input
     return handle_input(&ctx->chip8, event);
 }
@@ -66,9 +88,26 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 SDL_AppResult SDL_AppIterate(void *appstate) {
     AppState *ctx = (AppState *)appstate;
 
-    // Render clear screen (Red background)
-    SDL_SetRenderDrawColor(ctx->renderer, 255, 255, 255, 255);
-    SDL_RenderClear(ctx->renderer);
+    uint64_t current_time = SDL_GetTicks();
+    double delta_time = (double)(current_time - ctx->last_time); // Time in milliseconds
+    ctx->last_time = current_time;
+    ctx->timer_accumulator += delta_time;
+
+    const double target_60hz_ms = 1000.0 / 60.0; // ~16.6667ms
+    while (ctx->timer_accumulator >= target_60hz_ms) {
+        chip8_update_timer(&ctx->chip8);
+
+        ctx->timer_accumulator -= target_60hz_ms;
+    }
+
+    for (int i = 0; i < 8; i++) {
+        chip8_emulate_cycle(&ctx->chip8);
+    }
+
+    if (ctx->chip8.draw_flag) {
+        display_draw(&ctx->chip8, ctx->renderer, ctx->texture);
+    }
+
     SDL_RenderPresent(ctx->renderer);
 
     return SDL_APP_CONTINUE;

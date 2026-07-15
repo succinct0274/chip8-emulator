@@ -1,11 +1,10 @@
 #include "chip8.h"
+#include "common.h"
+#include "instruction.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "instruction.h"
-#include "common.h"
-
 
 
 const unsigned char chip8_fontset[CHIP8_FONTSET_SIZE] = {
@@ -95,6 +94,15 @@ void chip8_emulate_cycle(Chip8 *chip8) {
     // Fetch opcode (two bytes as one instruction set)
     chip8->opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];
 
-	instruction_execute(chip8, chip8->opcode);
+    instruction_execute(chip8, chip8->opcode);
+}
 
+void chip8_update_timer(Chip8 *chip8) {
+    if (chip8->delay_timer > 0) {
+        chip8->delay_timer--;
+    }
+
+    if (chip8->sound_timer > 0) {
+        chip8->sound_timer--;
+    }
 }

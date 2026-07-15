@@ -45,3 +45,4 @@ extern const unsigned char chip8_fontset[CHIP8_FONTSET_SIZE];
 void chip8_init(Chip8 *chip8);
 void chip8_load_rom(Chip8 *chip8, char *filename);
 void chip8_emulate_cycle(Chip8 *chip8);
+void chip8_update_timer(Chip8 *chip8);
