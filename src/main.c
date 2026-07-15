@@ -4,6 +4,7 @@
 
 #include "chip8.h"
 #include "display.h"
+#include "input.h"
 #include <stdio.h>
 
 
@@ -37,7 +38,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     }
 
     // Initialize chip8
-    chip8_init(&ctx->chip8);
     char *rom_filename;
     if (argc >= 2) {
         chip8_init(&ctx->chip8);
@@ -45,6 +45,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
         printf("Loading ROM: %s\n", rom_filename);
 
         chip8_load_rom(&ctx->chip8, rom_filename);
+
+        printf("Loaded ROM: %s\n", rom_filename);
+
     }
 
     return SDL_APP_CONTINUE;
@@ -55,7 +58,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS; // Clean exit
     }
-    return SDL_APP_CONTINUE;
+
+    // handle keyboard input
+    return handle_input(&ctx->chip8, event);
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
