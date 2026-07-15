@@ -1,7 +1,7 @@
 #include "input.h"
 #include <SDL3/SDL.h>
 
-static const SDL_Scancode KEYMAP[] = {SDL_SCANCODE_X,
+static const SDL_Scancode KEYMAP[CHIP8_BUTTON_COUNT] = {SDL_SCANCODE_X,
                                     SDL_SCANCODE_1,
                                     SDL_SCANCODE_2,
                                     SDL_SCANCODE_3,
@@ -28,7 +28,7 @@ SDL_AppResult handle_input(Chip8 *chip8, SDL_Event *event) {
     }
 
     uint8_t state = event->type == SDL_EVENT_KEY_DOWN ? 1 : 0;
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < CHIP8_BUTTON_COUNT; i++) {
         if (event->key.scancode == KEYMAP[i]) {
             chip8->key[i] = state;
             break;
