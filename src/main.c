@@ -80,7 +80,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         return SDL_APP_SUCCESS; // Clean exit
     }
 
-    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
     // handle keyboard input
     return handle_input(&ctx->chip8, event);
 }
@@ -109,6 +108,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
 
     SDL_RenderPresent(ctx->renderer);
+
+    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
 
     return SDL_APP_CONTINUE;
 }

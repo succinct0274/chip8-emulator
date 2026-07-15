@@ -6,7 +6,7 @@
 #include "common.h"
 
 void setup(Chip8 *chip8) {
-    RESET_POINTER(chip8);
+    memset(chip8, 0, sizeof(*chip8));
     chip8->pc = 0x200;
     chip8->sp = 0;
 }

@@ -23,6 +23,7 @@ void display_draw(Chip8 *chip8, SDL_Renderer *renderer, SDL_Texture *texture) {
 	SDL_RenderClear(renderer);
 	SDL_RenderTexture(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
+    chip8->draw_flag = false;
 }
 
 

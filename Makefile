@@ -65,7 +65,7 @@ $(TEST_BIN)/%: $(TEST_DIR)/%.c $(LIB_OBJS) | $(BIN_DIR)
 
 # Run the emulator
 run: all
-	./$(TARGET)
+	./$(TARGET) ./roms/chipwar.ch8
 
 test: $(TEST_BINS)
 	@for test in $(TEST_BINS); do ./$$test; done

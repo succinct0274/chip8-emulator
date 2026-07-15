@@ -33,12 +33,12 @@ void chip8_init(Chip8 *chip8) {
     chip8->I = 0;
     chip8->sp = 0;
 
-    RESET_POINTER(chip8->gfx);
-    RESET_POINTER(chip8->stack);
-    RESET_POINTER(chip8->V);
-    RESET_POINTER(chip8->memory);
-    RESET_POINTER(chip8->key);
-    RESET_POINTER(chip8->key_prev);
+    memset(chip8->gfx, 0, sizeof(chip8->gfx));
+    memset(chip8->stack, 0, sizeof(chip8->stack));
+    memset(chip8->V, 0, sizeof(chip8->V));
+    memset(chip8->memory, 0, sizeof(chip8->memory));
+    memset(chip8->key, 0, sizeof(chip8->key));
+    memset(chip8->key_prev, 0, sizeof(chip8->key_prev));
 
     for (int i = 0; i < CHIP8_FONTSET_SIZE; i++) {
         chip8->memory[i] = chip8_fontset[i];

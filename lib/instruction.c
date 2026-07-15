@@ -66,7 +66,7 @@ void handle_0000(Chip8 *chip8, uint16_t opcode) {
     fprintf(stderr, "opcode: %d\n", opcode);
     switch (opcode) {
     case OP_CLS:
-        RESET_POINTER(chip8->gfx);
+        memset(chip8->gfx, 0, sizeof(chip8->gfx));
         chip8->draw_flag = true;
         break;
     case OP_RET:
@@ -159,29 +159,44 @@ void handle_8000(Chip8 *chip8, uint16_t opcode) {
         chip8->V[x] ^= chip8->V[y];
         chip8->V[15] = 0; // Fixes logical layout corruption
         break;
-    case OP_ADD:
-        // Carry if Vx + Vy > 255
-        chip8->V[15] = (chip8->V[x] > (0xFF - chip8->V[y])) ? 1 : 0;
-        chip8->V[x] += chip8->V[y];
+    case OP_ADD: {
+        uint8_t val_x = chip8->V[x];
+        uint8_t val_y = chip8->V[y];
+        uint8_t carry = (val_x > (0xFF - val_y)) ? 1 : 0;
+        chip8->V[x] = val_x + val_y;
+        chip8->V[15] = carry;
         break;
-    case OP_SUB:
-        // Borrow flag: VF = 1 if Vx >= Vy
-        chip8->V[15] = (chip8->V[x] >= chip8->V[y]) ? 1 : 0;
-        chip8->V[x] -= chip8->V[y];
+    }
+    case OP_SUB: {
+        uint8_t val_x = chip8->V[x];
+        uint8_t val_y = chip8->V[y];
+        uint8_t borrow = (val_x >= val_y) ? 1 : 0;
+        chip8->V[x] = val_x - val_y;
+        chip8->V[15] = borrow;
         break;
-    case OP_SHR:
-        chip8->V[15] = (chip8->V[x] & 0x01);
-        chip8->V[x] >>= 1;
+    }
+    case OP_SHR: {
+        uint8_t val_x = chip8->V[x];
+        uint8_t lsb = val_x & 0x01;
+        chip8->V[x] = val_x >> 1;
+        chip8->V[15] = lsb;
         break;
-    case OP_SUBN:
-        // Borrow flag: VF = 1 if Vy >= Vx
-        chip8->V[15] = (chip8->V[y] >= chip8->V[x]) ? 1 : 0;
-        chip8->V[x] = chip8->V[y] - chip8->V[x];
+    }
+    case OP_SUBN: {
+        uint8_t val_x = chip8->V[x];
+        uint8_t val_y = chip8->V[y];
+        uint8_t borrow = (val_y >= val_x) ? 1 : 0;
+        chip8->V[x] = val_y - val_x;
+        chip8->V[15] = borrow;
         break;
-    case OP_SHL:
-        chip8->V[15] = (chip8->V[x] >> 7) & 0x01;
-        chip8->V[x] <<= 1;
+    }
+    case OP_SHL: {
+        uint8_t val_x = chip8->V[x];
+        uint8_t msb = (val_x >> 7) & 0x01;
+        chip8->V[x] = val_x << 1;
+        chip8->V[15] = msb;
         break;
+    }
     default:
         fprintf(stderr, "Unknown opcode 0x%X\n", opcode);
         return;
