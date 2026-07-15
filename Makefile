@@ -2,8 +2,8 @@
 # Compiler and Flags Configuration
 # ==========================================
 CC       := clang
-CFLAGS   := -Wall -Wextra -std=c11 -O2 $(shell sdl2-config --cflags)
-LDFLAGS  := $(shell sdl2-config --libs) -lm
+CFLAGS   := -Wall -Wextra -std=c11 -O2 $(shell pkg-config sdl3 --cflags)
+LDFLAGS  := $(shell pkg-config sdl3 --libs) -lm
 
 # ==========================================
 # Directory Layout
