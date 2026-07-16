@@ -56,14 +56,12 @@ typedef enum {
 
 void instruction_execute(Chip8 *chip8, uint16_t opcode) {
     uint8_t idx = NIBBLE_TO_INDEX(opcode & 0xF000);
-    printf("Retrieve instruction opcode 0x%04X at index %d\n", opcode ,idx);
     instruction_table[idx](chip8, opcode);
 }
 
 // http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#3.1
 void handle_0000(Chip8 *chip8, uint16_t opcode) {
 
-    fprintf(stderr, "opcode: %d\n", opcode);
     switch (opcode) {
     case OP_CLS:
         memset(chip8->gfx, 0, sizeof(chip8->gfx));
@@ -315,7 +313,11 @@ void handle_F000(Chip8 *chip8, uint16_t opcode) {
     case OP_LD_VX_K:
         proceeded = false;
         for (int i = 0; i < CHIP8_BUTTON_COUNT; i++) {
+            if (chip8->key[i] != 0 || chip8->key_prev[i] != 0) {
+                printf("[OP_LD_VX_K] Key %d: key=%d, key_prev=%d\n", i, chip8->key[i], chip8->key_prev[i]);
+            }
             if (chip8->key[i] == 0 && chip8->key_prev[i] != 0) {
+                printf("[OP_LD_VX_K] Key %d release detected! Proceeding...\n", i);
                 chip8->V[x] = i;
                 proceeded = true;
                 break;
