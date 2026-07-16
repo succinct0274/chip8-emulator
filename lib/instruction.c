@@ -279,19 +279,22 @@ void handle_E000(Chip8 *chip8, uint16_t opcode) {
     uint8_t subcode = opcode & 0x00FF;
     uint8_t x = (opcode & 0x0F00) >> 8;
 
-    if (subcode == OP_SKP && chip8->key[chip8->V[x]] != 0) {
+    if (subcode == OP_SKP) {
 
         // Ex9E - SKP Vx
         // Skip next instruction if key with the value of Vx is pressed.
         // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
 
-        chip8->pc += 2;    
-    } else if (subcode == OP_SKNP && chip8->key[chip8->V[x]] == 0) {
+        if (chip8->key[chip8->V[x]] != 0) {
+            chip8->pc += 2;
+        }
+    } else if (subcode == OP_SKNP) {
         // ExA1 - SKNP Vx
         // Skip next instruction if key with the value of Vx is not pressed.
         // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
-
-        chip8->pc += 2;
+        if (chip8->key[chip8->V[x]] == 0) {
+            chip8->pc += 2;
+        }
     } else {
         fprintf(stderr, "Unknown opcode 0x%X\n", opcode);
         return;
@@ -313,11 +316,8 @@ void handle_F000(Chip8 *chip8, uint16_t opcode) {
     case OP_LD_VX_K:
         proceeded = false;
         for (int i = 0; i < CHIP8_BUTTON_COUNT; i++) {
-            if (chip8->key[i] != 0 || chip8->key_prev[i] != 0) {
-                printf("[OP_LD_VX_K] Key %d: key=%d, key_prev=%d\n", i, chip8->key[i], chip8->key_prev[i]);
-            }
-            if (chip8->key[i] == 0 && chip8->key_prev[i] != 0) {
-                printf("[OP_LD_VX_K] Key %d release detected! Proceeding...\n", i);
+            // Detect key press (key is down now, but was up in previous frame)
+            if (chip8->key[i] != 0 && chip8->key_prev[i] == 0) {
                 chip8->V[x] = i;
                 proceeded = true;
                 break;

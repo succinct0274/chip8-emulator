@@ -99,6 +99,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         ctx->timer_accumulator -= target_60hz_ms;
     }
 
+    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
+
     for (int i = 0; i < 8; i++) {
         chip8_emulate_cycle(&ctx->chip8);
     }
@@ -108,8 +110,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
 
     SDL_RenderPresent(ctx->renderer);
-
-    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
 
     return SDL_APP_CONTINUE;
 }

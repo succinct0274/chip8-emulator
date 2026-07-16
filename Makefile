@@ -65,13 +65,13 @@ $(TEST_BIN)/%: $(TEST_DIR)/%.c $(LIB_OBJS) | $(BIN_DIR)
 
 # Run the emulator
 run: all
-	./$(TARGET) ./roms/chipwar.ch8
+	./$(TARGET) ./roms/1-chip8-logo.ch8
 
 test: $(TEST_BINS)
 	@for test in $(TEST_BINS); do ./$$test; done
 
 debug: all
-	./$(TARGET) ./roms/test.ch8
+	./$(TARGET) ./roms/1-chip8-logo.ch8
 
 # Clean build artifacts
 clean:
