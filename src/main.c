@@ -6,6 +6,7 @@
 #include "display.h"
 #include "input.h"
 #include <stdio.h>
+#include "audio.h"
 
 
 typedef struct {
@@ -14,6 +15,7 @@ typedef struct {
     SDL_Texture *texture;
     Chip8 chip8;
 
+    SDL_Mutex *audio_mutex; 
     uint64_t last_time;
     double timer_accumulator;
     double cpu_accumulator;    // Tracks partial time for CPU cycles
@@ -22,7 +24,7 @@ typedef struct {
 } AppState;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO)) {
         return SDL_APP_FAILURE;
     }
 
@@ -54,6 +56,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 	if (!SDL_SetTextureScaleMode(ctx->texture, SDL_SCALEMODE_NEAREST)) {
 		fprintf(stderr, "Nearest neighbour texture filtering failed to enable.");
 	}
+
+    // Initialize audio
+    if (!audio_init(&ctx->chip8)) {
+        return SDL_APP_FAILURE;
+    }
 
     // Initialize chip8
     char *rom_filename;
@@ -109,8 +116,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // 2. Process CPU Cycles Dynamically (Assuming a target of ~500Hz)
     // 500Hz means 1 cycle every 2.0 milliseconds
     const double target_cpu_ms = 1000.0 / 500.0; 
-    
-    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
 
     while (ctx->cpu_accumulator >= target_cpu_ms) {
   
@@ -119,6 +124,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         if (ctx->display_wait_quirk && is_draw_opcode && !ctx->vblank_ready) {
             // STOP executing instructions for this iteration. 
             // Leave the cpu_accumulator alone so it retries next time!
+            ctx->cpu_accumulator = 0;
             break; 
         }
 
@@ -140,6 +146,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     SDL_RenderPresent(ctx->renderer);
 
+    memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
     return SDL_APP_CONTINUE;
 }
 
@@ -150,30 +157,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
         SDL_DestroyWindow(ctx->window);
         SDL_free(ctx);
     }
+
+    audio_destroy();
     SDL_Quit();
 }
-
-// int main(int argc, char* argv[]) {
-
-//     if (!display_init()) {
-//         return -1;
-//     }
-
-//     Chip8 chip8;
-//     char *rom_filename;
-//     if (argc >= 2) {
-//         chip8_init(&chip8);
-//         rom_filename = argv[1];
-//         printf("Loading ROM: %s\n", rom_filename);
-
-//         chip8_load_rom(&chip8, rom_filename);
-//     }
-
-//     bool quit = false;
-//     while (!quit) {
-//         display_draw(&quit);
-//     }
-
-//     display_close();
-//     return 0;
-// }

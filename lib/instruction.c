@@ -56,6 +56,7 @@ typedef enum {
 
 void instruction_execute(Chip8 *chip8, uint16_t opcode) {
     uint8_t idx = NIBBLE_TO_INDEX(opcode & 0xF000);
+    fprintf(stdout, "Opcode 0x%X\n", opcode);
     instruction_table[idx](chip8, opcode);
 }
 
@@ -72,7 +73,8 @@ void handle_0000(Chip8 *chip8, uint16_t opcode) {
         chip8->pc = chip8->stack[chip8->sp];
         break;
     default: // 0nnn
-        printf("Unknown opcode [0x0000] SYS addr: 0x%X\n", opcode);
+        fprintf(stdout, "Unknown opcode [0x0000] SYS addr: 0x%X\n", opcode);
+        return;
         break;
     }
 

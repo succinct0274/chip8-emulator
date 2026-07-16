@@ -71,7 +71,7 @@ test: $(TEST_BINS)
 	@for test in $(TEST_BINS); do ./$$test; done
 
 debug: all
-	./$(TARGET) ./roms/1-chip8-logo.ch8
+	./$(TARGET) ./roms/7-beep.ch8
 
 # Clean build artifacts
 clean:
