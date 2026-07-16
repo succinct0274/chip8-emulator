@@ -73,7 +73,7 @@ void handle_0000(Chip8 *chip8, uint16_t opcode) {
         break;
     default: // 0nnn
         printf("Unknown opcode [0x0000] SYS addr: 0x%X\n", opcode);
-        return;
+        break;
     }
 
     chip8->pc += 2;

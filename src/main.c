@@ -16,6 +16,9 @@ typedef struct {
 
     uint64_t last_time;
     double timer_accumulator;
+    double cpu_accumulator;    // Tracks partial time for CPU cycles
+    bool vblank_ready;         // Flag signaling a new 60Hz frame has arrived
+    bool display_wait_quirk;  
 } AppState;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
@@ -88,23 +91,49 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     AppState *ctx = (AppState *)appstate;
 
     uint64_t current_time = SDL_GetTicks();
-    double delta_time = (double)(current_time - ctx->last_time); // Time in milliseconds
+    double delta_time = (double)(current_time - ctx->last_time); 
     ctx->last_time = current_time;
-    ctx->timer_accumulator += delta_time;
 
-    const double target_60hz_ms = 1000.0 / 60.0; // ~16.6667ms
+    // Accumulate time for both systems
+    ctx->timer_accumulator += delta_time;
+    ctx->cpu_accumulator += delta_time;
+
+    // 1. Process 60Hz System Timers
+    const double target_60hz_ms = 1000.0 / 60.0; // ~16.67ms
     while (ctx->timer_accumulator >= target_60hz_ms) {
         chip8_update_timer(&ctx->chip8);
-
+        ctx->vblank_ready = true; 
         ctx->timer_accumulator -= target_60hz_ms;
     }
 
+    // 2. Process CPU Cycles Dynamically (Assuming a target of ~500Hz)
+    // 500Hz means 1 cycle every 2.0 milliseconds
+    const double target_cpu_ms = 1000.0 / 500.0; 
+    
     memcpy(ctx->chip8.key_prev, ctx->chip8.key, sizeof(ctx->chip8.key));
 
-    for (int i = 0; i < 8; i++) {
+    while (ctx->cpu_accumulator >= target_cpu_ms) {
+  
+        bool is_draw_opcode = allow_draw(&ctx->chip8);
+        // If Display Wait is enabled, we are hitting a draw opcode, AND vblank hasn't happened yet...
+        if (ctx->display_wait_quirk && is_draw_opcode && !ctx->vblank_ready) {
+            // STOP executing instructions for this iteration. 
+            // Leave the cpu_accumulator alone so it retries next time!
+            break; 
+        }
+
+        // Run the cycle normally
         chip8_emulate_cycle(&ctx->chip8);
+
+        // If we just successfully executed a Draw Opcode, consume our VBLANK token
+        if (is_draw_opcode) {
+            ctx->vblank_ready = false; 
+        }
+
+        ctx->cpu_accumulator -= target_cpu_ms;
     }
 
+    // 3. Render Pass
     if (ctx->chip8.draw_flag) {
         display_draw(&ctx->chip8, ctx->renderer, ctx->texture);
     }
